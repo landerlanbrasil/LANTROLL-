@@ -114,44 +114,4 @@
 
 <div class="content">
   <h1>Verificar Produto</h1>
-  <button class="scan-button" onclick="startScanner()">📷 Escanear QR Code</button>
-  <div id="reader"></div>
-
-  <div id="message" class="message">✅ Esse produto é original</div>
-  <div id="goldText" class="gold-text">DURATESTON PLUS</div>
-  <div id="redText" class="red-text">Frasco ampolla 10mL/250mg</div>
-</div>
-
-<script>
-  function startScanner() {
-    document.getElementById('reader').style.display = 'block';
-    const html5QrCode = new Html5Qrcode("reader");
-
-    html5QrCode.start(
-      { facingMode: "environment" },
-      {
-        fps: 10,
-        qrbox: 250
-      },
-      qrCodeMessage => {
-        console.log(`Código lido: ${qrCodeMessage}`);
-        if (qrCodeMessage.includes("L25077") || qrCodeMessage.includes("DROSTANOLONA")) {
-          document.getElementById('message').classList.add('show');
-          document.getElementById('goldText').classList.add('show');
-          document.getElementById('redText').classList.add('show');
-        } else {
-          alert("Produto não reconhecido!");
-        }
-        html5QrCode.stop();
-      },
-      errorMessage => {
-        console.log(`Erro de leitura: ${errorMessage}`);
-      }
-    ).catch(err => {
-      console.log(`Não foi possível iniciar o scanner: ${err}`);
-    });
-  }
-</script>
-
-</body>
-</html>
+  <button class="scan-button" onclick="startScanner()">
