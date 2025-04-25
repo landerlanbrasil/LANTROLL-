@@ -13,13 +13,23 @@
       font-family: Arial, sans-serif;
       background-color: #f4f4f4;
       overflow: hidden;
+      text-align: center;
     }
-    .header, .banner, .content {
-      display: none; /* Esconde tudo para o scanner dominar a tela */
+    #startScanBtn {
+      background-color: gold;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 20px;
+      border-radius: 10px;
+      margin-top: 50px;
+      cursor: pointer;
+      font-weight: bold;
     }
     #reader {
       width: 100vw;
       height: 100vh;
+      display: none;
       object-fit: cover;
     }
     .overlay-message {
@@ -55,6 +65,8 @@
 </head>
 <body>
 
+<button id="startScanBtn" onclick="startScanner()">ESCANEAR QR-CODE</button>
+
 <div id="reader"></div>
 
 <div id="overlayMessage" class="overlay-message">✅ Produto Autêntico!</div>
@@ -65,11 +77,15 @@
   let html5QrCode;
 
   function startScanner() {
+    document.getElementById('startScanBtn').style.display = 'none';
+    const reader = document.getElementById('reader');
+    reader.style.display = 'block';
+
     html5QrCode = new Html5Qrcode("reader");
     Html5Qrcode.getCameras().then(cameras => {
       if (cameras && cameras.length) {
         html5QrCode.start(
-          { facingMode: "environment" }, // Sempre tenta usar a câmera traseira
+          { facingMode: "environment" }, 
           {
             fps: 10,
             qrbox: { width: 300, height: 300 }
@@ -77,7 +93,8 @@
           qrCodeMessage => {
             console.log("QR Code Lido:", qrCodeMessage);
 
-            if (qrCodeMessage.includes("L25077") || qrCodeMessage.toUpperCase().includes("DROSTANOLONA")) {
+            // Validação do QR code
+            if (qrCodeMessage.includes("DURAOK") || qrCodeMessage.includes("L25077")) {
               document.getElementById('overlayMessage').style.display = 'block';
               document.getElementById('goldText').style.display = 'block';
               document.getElementById('redText').style.display = 'block';
@@ -96,9 +113,6 @@
       console.error("Erro ao acessar câmera:", err);
     });
   }
-
-  // Inicia o scanner assim que a página carrega
-  window.onload = startScanner;
 </script>
 
 </body>
