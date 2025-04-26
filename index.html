@@ -82,6 +82,15 @@
       display: none;
       margin-top: 20px;
     }
+    #errorMessage {
+      background-color: #dc3545;
+      color: white;
+      padding: 20px;
+      font-size: 20px;
+      border-radius: 10px;
+      margin-top: 20px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -106,6 +115,7 @@
   <div id="reader"></div>
 
   <div id="message">✅ Código lido com sucesso!</div>
+  <div id="errorMessage">❌ Erro ao acessar a câmera. Verifique permissões ou tente HTTPS.</div>
 </div>
 
 <script>
@@ -113,10 +123,12 @@
   let isScanning = false;
 
   function startScanner() {
-    if (isScanning) return; // Evita abrir múltiplas câmeras
+    if (isScanning) return;
 
     const reader = document.getElementById('reader');
     reader.style.display = 'block';
+    document.getElementById('message').style.display = 'none';
+    document.getElementById('errorMessage').style.display = 'none';
 
     html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
@@ -143,6 +155,9 @@
       isScanning = true;
     }).catch(err => {
       console.error("Erro ao iniciar câmera", err);
+      reader.style.display = 'none';
+      document.getElementById('errorMessage').style.display = 'block';
+      isScanning = false;
     });
   }
 </script>
