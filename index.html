@@ -165,7 +165,7 @@
     <div class="modal-content">
       <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" alt="Check">
       <h2>Produto Válido</h2>
-      <p id="productInfo">Produto: </p>
+      <p id="productInfo">Produto:</p>
       <p id="validationInfo">Validado: 1 vez.</p>
       <button onclick="closeModal()">Ok</button>
     </div>
@@ -174,3 +174,89 @@
 
 <script>
   let html5QrCode;
+  let isScanning = false;
+  let validationCount = 0;
+  let lastScannedCode = "";
+
+  function startScanner() {
+    if (isScanning) return;
+
+    const reader = document.getElementById('reader');
+    reader.style.display = 'block';
+    document.getElementById('successModal').style.display = 'none';
+
+    html5QrCode = new Html5Qrcode("reader");
+
+    Html5Qrcode.getCameras().then(cameras => {
+      if (cameras && cameras.length) {
+        html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 30,
+            qrbox: { width: window.innerWidth * 0.8, height: window.innerHeight * 0.8 },
+            aspectRatio: 1.0,
+            disableFlip: false,
+          },
+          (decodedText, decodedResult) => {
+            console.log(`Código lido: ${decodedText}`);
+            html5QrCode.stop().then(() => {
+              reader.style.display = 'none';
+              isScanning = false;
+
+              if (decodedText === lastScannedCode) {
+                validationCount++;
+              } else {
+                validationCount = 1;
+                lastScannedCode = decodedText;
+              }
+
+              openModal(decodedText);
+            }).catch((err) => {
+              console.error("Erro ao parar scanner", err);
+              isScanning = false;
+            });
+          },
+          (errorMessage) => {
+            console.warn(`Erro de leitura: ${errorMessage}`);
+          }
+        ).then(() => {
+          isScanning = true;
+        }).catch(err => {
+          console.error("Erro ao iniciar câmera", err);
+          reader.style.display = 'none';
+          isScanning = false;
+        });
+      } else {
+        alert("Nenhuma câmera encontrada.");
+      }
+    }).catch(err => {
+      console.error("Erro ao acessar câmeras:", err);
+      alert("Erro ao acessar a câmera: " + err);
+    });
+  }
+
+  function openModal(decodedText) {
+    const modal = document.getElementById('successModal');
+    const productInfo = document.getElementById('productInfo');
+    const validationInfo = document.getElementById('validationInfo');
+    const title = modal.querySelector('h2');
+
+    productInfo.innerText = `Produto: ${decodedText}`;
+    validationInfo.innerText = `Validado: ${validationCount} vez${validationCount > 1 ? 'es' : ''}.`;
+
+    if (validationCount > 1) {
+      title.style.color = 'gold';
+    } else {
+      title.style.color = 'green';
+    }
+
+    modal.style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('successModal').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
