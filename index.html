@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Verificação de Produto</title>
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
   <style>
     body, html {
       margin: 0;
@@ -172,51 +172,56 @@
 </div>
 
 <script>
-  let html5QrCode;
+  let videoElement;
+  let canvasElement;
+  let canvasContext;
   let isScanning = false;
 
   function startScanner() {
     if (isScanning) return;
 
+    // Exibindo o reader
     const reader = document.getElementById('reader');
     reader.style.display = 'block';
     document.getElementById('successModal').style.display = 'none';
 
-    html5QrCode = new Html5Qrcode("reader");
-    html5QrCode.start(
-      { facingMode: "environment" },
-      {
-        fps: 30, // Frequência de leitura melhorada
-        qrbox: { width: window.innerWidth * 0.8, height: window.innerHeight * 0.8 }, // Leitura maior
-        aspectRatio: 1.0, // Garantir aspecto correto
-        disableFlip: false, // Ativar flip caso necessário
-        videoConstraints: {
-          facingMode: "environment", 
-          width: { ideal: 1280 }, // Ajuste a resolução da câmera
-          height: { ideal: 720 }
-        }
-      },
-      (decodedText, decodedResult) => {
-        console.log(`Código lido: ${decodedText}`);
-        html5QrCode.stop().then(() => {
-          reader.style.display = 'none';
-          isScanning = false;
-          openModal(); // Abre o modal com sucesso
-        }).catch((err) => {
-          console.error("Erro ao parar scanner", err);
-          isScanning = false;
-        });
-      },
-      (errorMessage) => {
-        console.warn(`Erro de leitura: ${errorMessage}`);
-      }
-    ).then(() => {
-      isScanning = true;
-    }).catch(err => {
-      console.error("Erro ao iniciar câmera", err);
-      reader.style.display = 'none';
-      isScanning = false;
-    });
+    // Criação do elemento da câmera
+    videoElement = document.createElement("video");
+    canvasElement = document.createElement("canvas");
+    canvasContext = canvasElement.getContext("2d");
+
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+      .then(function (stream) {
+        videoElement.srcObject = stream;
+        videoElement.setAttribute("playsinline", true); // Necessário para iOS
+        videoElement.play();
+        requestAnimationFrame(scanQRCode);
+        isScanning = true;
+      })
+      .catch(function (err) {
+        console.error("Erro ao acessar a câmera", err);
+        isScanning = false;
+      });
+  }
+
+  function scanQRCode() {
+    if (!videoElement || !isScanning) return;
+
+    canvasElement.width = videoElement.videoWidth;
+    canvasElement.height = videoElement.videoHeight;
+    canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
+
+    const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
+    const code = jsQR(imageData.data, canvasElement.width, canvasElement.height);
+
+    if (code) {
+      console.log(`Código lido: ${code.data}`);
+      isScanning = false; // Parar a captura da câmera
+      videoElement.srcObject.getTracks().forEach(track => track.stop()); // Para a câmera
+      openModal(); // Abre o modal com sucesso
+    } else {
+      requestAnimationFrame(scanQRCode); // Continue escaneando se não encontrar um QR Code
+    }
   }
 
   function openModal() {
