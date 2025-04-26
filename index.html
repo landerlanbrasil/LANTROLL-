@@ -84,24 +84,56 @@
       z-index: 1000;
     }
 
-    #message {
-      background-color: #28a745;
-      color: white;
-      padding: 20px;
-      font-size: 24px;
-      border-radius: 10px;
+    /* Modal de sucesso */
+    #successModal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
       display: none;
-      margin-top: 20px;
     }
 
-    #errorMessage {
-      background-color: #dc3545;
+    .modal-content {
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      text-align: center;
+      width: 300px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.2);
+      position: relative;
+    }
+
+    .modal-content img {
+      width: 50px;
+      margin-bottom: 20px;
+    }
+
+    .modal-content h2 {
+      color: green;
+      margin-bottom: 20px;
+    }
+
+    .modal-content p {
+      color: black;
+      font-size: 18px;
+      margin: 10px 0;
+    }
+
+    .modal-content button {
+      background-color: green;
       color: white;
-      padding: 20px;
-      font-size: 20px;
+      border: none;
+      padding: 10px 20px;
+      font-size: 18px;
       border-radius: 10px;
+      cursor: pointer;
       margin-top: 20px;
-      display: none;
     }
   </style>
 </head>
@@ -126,8 +158,17 @@
 
   <div id="reader"></div>
 
-  <div id="message">✅ Código lido com sucesso!</div>
-  <div id="errorMessage">❌ Erro ao acessar a câmera. Verifique permissões ou tente HTTPS.</div>
+  <!-- Modal de sucesso -->
+  <div id="successModal">
+    <div class="modal-content">
+      <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" alt="Check">
+      <h2>Produto Válido</h2>
+      <p>Produto: NANDROLONA FENILPROPIONATO 100 mg/ml</p>
+      <p>Validado: 1 vez.</p>
+      <button onclick="closeModal()">Ok</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -139,8 +180,7 @@
 
     const reader = document.getElementById('reader');
     reader.style.display = 'block';
-    document.getElementById('message').style.display = 'none';
-    document.getElementById('errorMessage').style.display = 'none';
+    document.getElementById('successModal').style.display = 'none';
 
     html5QrCode = new Html5Qrcode("reader");
     html5QrCode.start(
@@ -154,7 +194,7 @@
         html5QrCode.stop().then(() => {
           reader.style.display = 'none';
           isScanning = false;
-          document.getElementById('message').style.display = 'block';
+          openModal();
         }).catch((err) => {
           console.error("Erro ao parar scanner", err);
           isScanning = false;
@@ -168,9 +208,16 @@
     }).catch(err => {
       console.error("Erro ao iniciar câmera", err);
       reader.style.display = 'none';
-      document.getElementById('errorMessage').style.display = 'block';
       isScanning = false;
     });
+  }
+
+  function openModal() {
+    document.getElementById('successModal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('successModal').style.display = 'none';
   }
 </script>
 
