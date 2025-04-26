@@ -190,12 +190,21 @@
     canvasElement = document.createElement("canvas");
     canvasContext = canvasElement.getContext("2d");
 
+    // Iniciar câmera
     navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
       .then(function (stream) {
         videoElement.srcObject = stream;
         videoElement.setAttribute("playsinline", true); // Necessário para iOS
         videoElement.play();
-        requestAnimationFrame(scanQRCode);
+
+        // Esperar o vídeo carregar e configurar o canvas
+        videoElement.onloadeddata = function () {
+          canvasElement.width = videoElement.videoWidth;
+          canvasElement.height = videoElement.videoHeight;
+
+          requestAnimationFrame(scanQRCode);
+        };
+
         isScanning = true;
       })
       .catch(function (err) {
@@ -207,8 +216,6 @@
   function scanQRCode() {
     if (!videoElement || !isScanning) return;
 
-    canvasElement.width = videoElement.videoWidth;
-    canvasElement.height = videoElement.videoHeight;
     canvasContext.drawImage(videoElement, 0, 0, canvasElement.width, canvasElement.height);
 
     const imageData = canvasContext.getImageData(0, 0, canvasElement.width, canvasElement.height);
